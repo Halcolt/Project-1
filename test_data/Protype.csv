@@ -1,0 +1,11 @@
+PType,ProviderName,NumberOfOption,GetAppPoint
+Host,BlueHost,NULL,4.1
+Drive,"Google Drive",NULL,4.8
+Host,HostGator,NULL,3.9
+Host,Hostinger,NULL,4.6
+Drive,IBackup,NULL,NULL
+Drive,IDrive,NULL,4.6
+Drive,Internxt,NULL,4.2
+Drive,pCloud,NULL,4.5
+Drive,sync.com,NULL,4.4
+Drive,"Zoolz BigMIND",NULL,NULL
