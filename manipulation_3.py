@@ -1,11 +1,31 @@
 import mysql.connector
 import numpy as np
 
+def connect_to_database():
+    # Read MySQL config from config.txt file
+    with open("config.txt") as f:
+        host = f.readline().strip()
+        user = f.readline().strip()
+        password = f.readline().strip()
+        database = f.readline().strip()
+
+    try:
+        conn = mysql.connector.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=database
+        )
+        if conn.is_connected():
+            print('Connection Successful')
+            return conn
+    except mysql.connector.Error as e:
+        print(f"Error connecting to MySQL: {e}") 
+        exit()
+
 def print_top_five_drive():
     # Create a cursor object
     mycursor = mydb.cursor()
-
-
     try:
         People = int(input("Maximum people you work with \n(only you then enter 1): "))
     except ValueError:
@@ -34,11 +54,9 @@ def print_top_five_drive():
         print("Here is all the addition option we have in our database: \n")
         for result in results:
             print("+ ",result[0])
-
         Moreoption = input("Enter the Option you want: ")
-
         mycursor.execute("""
-        SELECT ProviderDriveOption.ProverderOpID, ProviderDriveOption.ProviderName, ProviderDriveOption.Price, ProviderDriveOption.Capacity, AVG(((PricePoint + PeoplePoint)/2 + GetAppPoint)/2) as average
+        SELECT ProviderDriveOption.ProverderOpID, ProviderDriveOption.ProviderName, ProviderDriveOption.Price, ProviderDriveOption.Capacity, AVG((AveragePoint + GetAppPoint)/2) as average
         FROM ProviderDriveOption
         JOIN ProType ON ProType.ProviderName = ProviderDriveOption.ProviderName
         JOIN MoreDriveOption ON MoreDriveOption.ProverderOpID = ProviderDriveOption.ProverderOpID
@@ -47,7 +65,7 @@ def print_top_five_drive():
         """, (People, Money, Capacity, Moreoption))
     else:
         mycursor.execute("""
-        SELECT ProviderDriveOption.ProverderOpID, ProviderDriveOption.ProviderName, ProviderDriveOption.Price, ProviderDriveOption.Capacity, AVG(((PricePoint + PeoplePoint)/2 + GetAppPoint)/2) as average
+        SELECT ProviderDriveOption.ProverderOpID, ProviderDriveOption.ProviderName, ProviderDriveOption.Price, ProviderDriveOption.Capacity, AVG((AveragePoint + GetAppPoint)/2) as average
         FROM ProviderDriveOption
         JOIN ProType ON ProType.ProviderName = ProviderDriveOption.ProviderName
         JOIN MoreDriveOption ON MoreDriveOption.ProverderOpID = ProviderDriveOption.ProverderOpID
@@ -62,19 +80,11 @@ def print_top_five_drive():
         print("There are no suitable provider for you now, please Re-Enter the value you want for Cloud option")
         mycursor.close()
         return
-
-    # execute SQL query
-    mycursor.execute("SELECT COUNT(ProviderName) AS NumberOfProviders FROM ProType WHERE PType = 'Drive'")
-
-    # fetch result
-    result1 = mycursor.fetchone()
-
-    # execute SQL query
-    mycursor.execute("SELECT COUNT(ProverderOpID) AS NumberOfProviderOPs FROM ProviderDriveOption ")
-    result2 = mycursor.fetchone()
-
-    # print result
-    print("From {} provider from our database with total of {} option, we give you the top ranking choice base on your requirement".format(result1[0], result2[0]))
+    
+    # Count the total number of ProviderName and ProviderOpID
+    mycursor.execute("SELECT COUNT(DISTINCT ProviderName), COUNT(DISTINCT ProverderOpID) FROM ProviderDriveOption")
+    count_result = mycursor.fetchone()
+    print("From {} Provider with {} Cloud Option from our database, here is the best option ".format(count_result[0],count_result[1]))
 
     update_list = []
     for row in result:
@@ -136,20 +146,20 @@ def print_top_five_host():
             print("+ ",result[0])
         Moreoption = input("Enter the Option you want: ")
         mycursor.execute("""
-        SELECT ProviderHostOption.ProverderOpID, ProviderHostOption.ProviderName, ProviderHostOption.Price, ProviderHostOption.Core, ProviderHostOption.Ram, ProviderHostOption.Bandwidth, ProviderHostOption.Capacity, AVG((AveragePoint + GetAppPoint)/2) as average
+        SELECT ProviderHostOption.ProverderOpID, ProviderHostOption.ProviderName, ProviderHostOption.Price, ProviderHostOption.Core, ProviderHostOption.RAM, ProviderHostOption.Bandwidth,ProviderHostOption.Capacity, AVG((AveragePoint + GetAppPoint)/2) as average
         FROM ProviderHostOption
         JOIN ProType ON ProType.ProviderName = ProviderHostOption.ProviderName
         JOIN MoreHostOption ON MoreHostOption.ProverderOpID = ProviderHostOption.ProverderOpID
-        WHERE Price <= %s AND Core >= %s And Capacity >= %s And Ram >= %s and Bandwidth >= %s and MOption = %s
+        WHERE Price <= %s And RAM >= %s And Bandwidth >= %s And Core >= %s And Capacity >= %s and MOption = %s
         GROUP BY ProviderHostOption.ProverderOpID, ProviderHostOption.ProviderName
         """, (Money, Core, Capacity, Ram, Bandwidth, Moreoption))
     else:
         mycursor.execute("""
-        SELECT ProviderHostOption.ProverderOpID, ProviderHostOption.ProviderName, ProviderHostOption.Price, ProviderHostOption.Core, ProviderHostOption.Ram, ProviderHostOption.Bandwidth, ProviderHostOption.Capacity, AVG((AveragePoint + GetAppPoint)/2) as average
+        SELECT ProviderHostOption.ProverderOpID, ProviderHostOption.ProviderName, ProviderHostOption.Price, ProviderHostOption.Core, ProviderHostOption.RAM, ProviderHostOption.Bandwidth,ProviderHostOption.Capacity, AVG((AveragePoint + GetAppPoint)/2) as average
         FROM ProviderHostOption
         JOIN ProType ON ProType.ProviderName = ProviderHostOption.ProviderName
         JOIN MoreHostOption ON MoreHostOption.ProverderOpID = ProviderHostOption.ProverderOpID
-        WHERE Price <= %s AND Core >= %s And Capacity >= %s And Ram >= %s and Bandwidth >= %s 
+        WHERE Price <= %s And RAM >= %s And Bandwidth >= %s And Core >= %s And Capacity >= %s 
         GROUP BY ProviderHostOption.ProverderOpID, ProviderHostOption.ProviderName
         """, (Money, Core, Capacity, Ram, Bandwidth))
 
@@ -161,18 +171,10 @@ def print_top_five_host():
         mycursor.close()
         return
 
-        # execute SQL query
-    mycursor.execute("SELECT COUNT(ProviderName) AS NumberOfProviders FROM ProType WHERE PType = 'Host'")
-
-    # fetch result
-    result1 = mycursor.fetchone()
-
-    # execute SQL query
-    mycursor.execute("SELECT COUNT(ProverderOpID) AS NumberOfProviderOPs FROM ProviderHostOption ")
-    result2 = mycursor.fetchone()
-
-    # print result
-    print("From {} provider from our database with total of {} option, we give you the top ranking choice base on your requirement".format(result1[0], result2[0]))
+    # Count the total number of ProviderName and ProviderOpID
+    mycursor.execute("SELECT COUNT(DISTINCT ProviderName), COUNT(DISTINCT ProverderOpID) FROM ProviderDriveOption")
+    count_result = mycursor.fetchone()
+    print("From {} Provider with {} Cloud Option from our database, here is the best option ".format(count_result[0],count_result[1]))
     update_list = []
     for row in result:
         proverder_op_id = row[0]
@@ -180,31 +182,22 @@ def print_top_five_host():
         price = row[2]
         CPUs = row[3]
         Rams = row[4]
-
         Bands = row[5]
         capacity = row[6]
         average = row[7]
         update_list.append((average, proverder_op_id, provider_name, price, CPUs, Rams, Bands, capacity ))
+        
     print("Top option and provider for you base on what you need:")
-    update_list.sort(reverse=True, key=lambda x: x[0])
+    update_list.sort(reverse=True, key=lambda x: x[0] if x[0] is not None else 0)
+
     top_five = update_list[:5]
     for avg, proverder_op_id, provider_name, price, CPUs, Rams, Bands, capacity  in top_five:
         print("Provider Name: {}, ProverderOpID: {}, Price: {}, CPU_core: {}, Ram: {}Gb, Bandwidth {}Gb, Capacity: {} ,Average: {}".format(provider_name, proverder_op_id, price, CPUs, Rams, Bands,capacity , avg))
     mycursor.close()
 
-# Connect to the MySQL server
-mydb = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="Bill1567",
-        database="crawler"
-    )
+# Connect to the database
+mydb = connect_to_database()
 
-if(mydb):
-    print("Connection Successful\n")
-else:
-    print("Connection Fail")
-    exit()
 print("1. Search for Cloud Storage Provider \n2. Search for Hosting Provider ")
 choose = input("Your the Number of your choose: ")
 if (choose == "1"):

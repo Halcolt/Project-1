@@ -1,0 +1,13 @@
+1. 1-2 all Enter, no specific requirement
+
+2. 1-   people:1 ,Price <= 10$ , Minspace: 50gb, 
+
+3. 1-   people: 10, Price <= 50$, minspace: 500gb
+
+4. 1-   people: 10, Price <=100$, minspace: 500gb, Advanced sharing
+
+5. 2-   Price: 10$, capacity 10gb, cpuCore: 1, ram:1GB, BandWith: 1000Gb
+
+6. 2-   Price: 20$, capacity: 40Gb, cpuCore: 4, ram:4Gb, BandWith: 2000Gb
+
+7. 2-   Price: 30$, capacity: 40Gb, cpuCore: 4, ram:4Gb, BandWith: 2000Gb, Weekly Backups
